@@ -27,7 +27,7 @@ Outputs each intermediate stage to output/ for inspection.
 ## Status
 
 - [x] Edge detection + ROI masking
-- [ ] Hough transform line detection
+- [x] Hough transform line detection
 - [ ] Lane averaging and overlay
 - [ ] Video processing
 

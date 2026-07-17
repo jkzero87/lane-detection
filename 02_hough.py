@@ -57,7 +57,6 @@ if img is None:
 gray, blur, edges = detect_edges(img)
 masked_edges = region_of_interest(edges)
 lines = detect_lines(masked_edges, args.threshold, args.min_len, args.max_gap)
-print(lines.shape)
 line_img = draw_lines(masked_edges.shape, lines)
 
 # ---------- outputs ----------
