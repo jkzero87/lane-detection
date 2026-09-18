@@ -1,2 +1,6 @@
 output/
 __pycache__/
+
+# test videos and rendered output
+images/*.mp4
+output/*.mp4
