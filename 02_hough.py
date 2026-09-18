@@ -42,28 +42,33 @@ def draw_lines(shape, lines):
             cv2.line(canvas, (x1, y1), (x2, y2), 255, 5)
     return canvas
 
-# ---------- inputs ----------
-parser = argparse.ArgumentParser()
-parser.add_argument("--threshold", type=int, default=15)
-parser.add_argument("--min-len", type=int, default=40)
-parser.add_argument("--max-gap", type=int, default=20)
-parser.add_argument("--image", type=str, default="images/solidWhiteRight.jpg")
-args = parser.parse_args()
+def main():
+    # ---------- inputs ----------
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--threshold", type=int, default=15)
+    parser.add_argument("--min-len", type=int, default=40)
+    parser.add_argument("--max-gap", type=int, default=20)
+    parser.add_argument("--image", type=str, default="images/solidWhiteRight.jpg")
+    args = parser.parse_args()
 
-# ---------- execution ----------
-img = cv2.imread(args.image)
-if img is None:
-    raise SystemExit(f"could not read image: {args.image}")
-gray, blur, edges = detect_edges(img)
-masked_edges = region_of_interest(edges)
-lines = detect_lines(masked_edges, args.threshold, args.min_len, args.max_gap)
-line_img = draw_lines(masked_edges.shape, lines)
+    # ---------- execution ----------
+    img = cv2.imread(args.image)
+    if img is None:
+        raise SystemExit(f"could not read image: {args.image}")
+    gray, blur, edges = detect_edges(img)
+    masked_edges = region_of_interest(edges)
+    lines = detect_lines(masked_edges, args.threshold, args.min_len, args.max_gap)
+    line_img = draw_lines(masked_edges.shape, lines)
 
-# ---------- outputs ----------
-count = 0 if lines is None else len(lines)
-print(f"segments detected: {count}")
+    # ---------- outputs ----------
+    count = 0 if lines is None else len(lines)
+    print(f"segments detected: {count}")
 
-os.makedirs("output", exist_ok=True)
-filename = f"output/hough_t{args.threshold}_ml{args.min_len}_mg{args.max_gap}.jpg"
-cv2.imwrite(filename, line_img)
-print(f"saved: {filename}")
+    os.makedirs("output", exist_ok=True)
+    filename = f"output/hough_t{args.threshold}_ml{args.min_len}_mg{args.max_gap}.jpg"
+    cv2.imwrite(filename, line_img)
+    print(f"saved: {filename}")
+
+
+if __name__ == "__main__":
+    main()
