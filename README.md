@@ -2,7 +2,7 @@
 
 Detects road lane lines in dashcam images using the classic CV pipeline
 (no deep learning): grayscale → Gaussian blur → Canny edges → ROI mask →
-Hough transform (in progress).
+Hough transform → per-side line averaging → video overlay.
 
 Built as a learning project: each stage is implemented, tuned and
 documented by hand before moving to CNN-based approaches.
@@ -15,19 +15,48 @@ documented by hand before moving to CNN-based approaches.
 | Gaussian blur | Convolution with a 5x5 bell-curve kernel | Sensor noise and asphalt texture look like edges to a gradient detector |
 | Canny | Gradient + non-max suppression + hysteresis thresholds | Finds pixels where brightness changes sharply; hysteresis rescues weak edges connected to strong ones |
 | ROI mask | Zeroes everything outside a trapezoid via bitwise AND | The camera is fixed, so lanes always live in a known region of the frame |
-| Hough transform | (next) Turns edge pixels into line equations by voting | Disconnected pixels become actual lanes |
+| Hough transform | Turns edge pixels into line equations by voting | Disconnected pixels become actual lanes |
+| Lane averaging | Splits segments by slope sign (image coords: left lane is negative), fits one line per side with `np.polyfit` degree 1, extrapolated to the ROI bounds | A dozen noisy Hough segments per frame collapse into one stable line per lane |
+| Video | Runs the full pipeline per frame and writes an mp4v file; if a side's fit fails, reuses that side's previous frame's line | The still-image pipeline becomes a detector that runs on video, and the overlay does not flicker on frames where Hough finds nothing |
 
 ## Usage
 
-    python 01_explore.py                    # defaults: canny 50/150
-    python 01_explore.py --low 10 --high 50 # experiment with thresholds
+All scripts run under `/home/jkzero/ai-prep/.venv312/bin/python` (the base
+anaconda python has no cv2):
 
-Outputs each intermediate stage to output/ for inspection.
+    /home/jkzero/ai-prep/.venv312/bin/python 01_explore.py                # defaults: canny 50/150
+    /home/jkzero/ai-prep/.venv312/bin/python 01_explore.py --low 10 --high 50
+
+    /home/jkzero/ai-prep/.venv312/bin/python 02_hough.py                  # defaults: threshold 15, min-len 40, max-gap 20
+    /home/jkzero/ai-prep/.venv312/bin/python 02_hough.py --threshold 30 --min-len 60 --max-gap 10 --image images/solidWhiteRight.jpg
+
+    /home/jkzero/ai-prep/.venv312/bin/python 03_average.py                # defaults: images/solidWhiteRight.jpg, min-slope 0.5
+    /home/jkzero/ai-prep/.venv312/bin/python 03_average.py --image images/solidWhiteRight.jpg --min-slope 1.0
+
+    /home/jkzero/ai-prep/.venv312/bin/python 04_video.py                  # defaults: images/solidWhiteRight.mp4 -> output/04_lanes.mp4
+    /home/jkzero/ai-prep/.venv312/bin/python 04_video.py --video images/solidYellowLeft.mp4 --out output/04_lanes_yellow.mp4 --min-slope 0.5
+
+Flags per script: `01` accepts `--low`/`--high`; `02` accepts
+`--threshold`/`--min-len`/`--max-gap`/`--image`; `03` accepts
+`--image`/`--min-slope`; `04` accepts `--video`/`--out`/`--min-slope`.
+
+01–03 write intermediate stages to output/ for inspection; 04 writes the
+annotated video and prints frame/fallback counts.
 
 ## Status
 
 - [x] Edge detection + ROI masking
 - [x] Hough transform line detection
-- [ ] Lane averaging and overlay
-- [ ] Video processing
+- [x] Lane averaging and overlay
+- [x] Video processing
+
+## Known limitations
+
+- Each lane is a single straight-line fit, so detection degrades on sharp curves.
+- Grayscale conversion makes yellow markings on light asphalt a weak edge;
+  Canny thresholds that find white lines may miss yellow ones entirely.
+- Per-frame averaging with no temporal smoothing: a dashed marking changes the
+  segment set between frames, so its fitted line shifts slightly.
+- The previous-line fallback exists to stop flicker on empty frames but never
+  triggered on either test clip.
 
