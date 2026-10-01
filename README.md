@@ -7,6 +7,13 @@ Hough transform → per-side line averaging → video overlay.
 Built as a learning project: each stage is implemented, tuned and
 documented by hand before moving to CNN-based approaches.
 
+| Canny edges inside the ROI | Fitted lanes (`03_average.py`) |
+|---|---|
+| ![Edges](docs/edges_masked.jpg) | ![Lanes](docs/lanes.jpg) |
+
+Both images come from `images/solidWhiteRight.jpg` with the default settings:
+13 Hough segments (7 left, 6 right), fitted slopes −0.71 and 0.65.
+
 ## Pipeline stages
 
 | Stage | What it does | Why |
@@ -21,20 +28,24 @@ documented by hand before moving to CNN-based approaches.
 
 ## Usage
 
-All scripts run under `/home/jkzero/ai-prep/.venv312/bin/python` (the base
-anaconda python has no cv2):
+Python 3 with OpenCV and NumPy:
 
-    /home/jkzero/ai-prep/.venv312/bin/python 01_explore.py                # defaults: canny 50/150
-    /home/jkzero/ai-prep/.venv312/bin/python 01_explore.py --low 10 --high 50
+    pip install -r requirements.txt
 
-    /home/jkzero/ai-prep/.venv312/bin/python 02_hough.py                  # defaults: threshold 15, min-len 40, max-gap 20
-    /home/jkzero/ai-prep/.venv312/bin/python 02_hough.py --threshold 30 --min-len 60 --max-gap 10 --image images/solidWhiteRight.jpg
+    python 01_explore.py                # defaults: canny 50/150
+    python 01_explore.py --low 10 --high 50
 
-    /home/jkzero/ai-prep/.venv312/bin/python 03_average.py                # defaults: images/solidWhiteRight.jpg, min-slope 0.5
-    /home/jkzero/ai-prep/.venv312/bin/python 03_average.py --image images/solidWhiteRight.jpg --min-slope 1.0
+    python 02_hough.py                  # defaults: threshold 15, min-len 40, max-gap 20
+    python 02_hough.py --threshold 30 --min-len 60 --max-gap 10 --image images/solidWhiteRight.jpg
 
-    /home/jkzero/ai-prep/.venv312/bin/python 04_video.py                  # defaults: images/solidWhiteRight.mp4 -> output/04_lanes.mp4
-    /home/jkzero/ai-prep/.venv312/bin/python 04_video.py --video images/solidYellowLeft.mp4 --out output/04_lanes_yellow.mp4 --min-slope 0.5
+    python 03_average.py                # defaults: images/solidWhiteRight.jpg, min-slope 0.5
+    python 03_average.py --image images/solidWhiteRight.jpg --min-slope 1.0
+
+    python 04_video.py                  # defaults: images/solidWhiteRight.mp4 -> output/04_lanes.mp4
+    python 04_video.py --video images/solidYellowLeft.mp4 --out output/04_lanes_yellow.mp4 --min-slope 0.5
+
+The test videos are not in the repository (`images/*.mp4` is gitignored);
+put `solidWhiteRight.mp4` / `solidYellowLeft.mp4` in `images/` to run `04`.
 
 Flags per script: `01` accepts `--low`/`--high`; `02` accepts
 `--threshold`/`--min-len`/`--max-gap`/`--image`; `03` accepts
