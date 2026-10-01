@@ -1,4 +1,5 @@
 # ---------- 1. IMPORTS ----------
+import os
 import cv2
 import argparse
 import numpy as np
@@ -39,6 +40,7 @@ gray, blur, edges = detect_edges(img, low=args.low, high=args.high)
 masked = region_of_interest(edges)
 
 # ---------- 5. OUTPUTS ----------
+os.makedirs('output', exist_ok=True)   # imwrite fails silently if the folder is missing
 cv2.imwrite('output/1_gray.jpg', gray)
 cv2.imwrite('output/2_blur.jpg', blur)
 out_path = f'output/3_edges_{args.low}_{args.high}.jpg'
